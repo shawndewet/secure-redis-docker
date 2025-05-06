@@ -13,7 +13,10 @@ deploy:
 	@echo "🚀 Starting nginx and certbot containers..."
 	sudo docker compose -f docker-compose.yml up -d nginx certbot
 	@echo "🔒 Requesting Let's Encrypt certificate for $(DOMAIN)..."
-	sudo docker run --rm -v certs:/etc/letsencrypt certbot/certbot certonly \
+	sudo docker run --rm \
+		-v certs:/etc/letsencrypt \
+		-v certbot-htdocs:/var/www.certbot \
+		certbot/certbot certonly \
 		--webroot --webroot-path=/var/www/certbot \
 		-d $(DOMAIN) --email $(EMAIL) --agree-tos --no-eff-email
 	@echo "🧠 Starting Redis container..."
