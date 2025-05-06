@@ -15,7 +15,7 @@ deploy:
 	@echo "🔒 Requesting Let's Encrypt certificate for $(DOMAIN)..."
 	sudo docker run --rm \
 		-v certs:/etc/letsencrypt \
-		-v certbot-htdocs:/var/www.certbot \
+		-v certbot-htdocs:/var/www/certbot \
 		certbot/certbot certonly \
 		--webroot --webroot-path=/var/www/certbot \
 		-d $(DOMAIN) --email $(EMAIL) --agree-tos --no-eff-email
