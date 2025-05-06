@@ -11,6 +11,12 @@ init:
 	@DOMAIN="$(DOMAIN)" REDIS_PASSWORD="$(REDIS_PASSWORD)" envsubst '$$DOMAIN $$REDIS_PASSWORD' < redis/redis.conf > redis/redis.conf.generated
 	@mv redis/redis.conf.generated redis/redis.conf
 
+create-volumes:
+	@echo "🛠 Creating global Docker volumes 'certs' and 'certbot-htdocs' if missing..."
+	@if ! sudo docker volume inspect certs >/dev/null 2>&1; then sudo docker volume create certs; else echo "✅ Volume 'certs' already exists."; fi
+	@if ! sudo docker volume inspect certbot-htdocs >/dev/null 2>&1; then sudo docker volume create certbot-htdocs; else echo "✅ Volume 'certbot-htdocs' already exists."; fi
+	@echo "✅ Volume creation completed."
+
 deploy:
 	@echo "🚀 Copying certonly nginx config..."
 	cp nginx/nginx.certonly.conf nginx/nginx.conf
