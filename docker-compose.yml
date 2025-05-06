@@ -12,8 +12,6 @@ services:
       - certs:/etc/letsencrypt
     environment:
       - DOMAIN=${DOMAIN}
-    depends_on:
-      - redis
 
   redis:
     image: redis:7-alpine
