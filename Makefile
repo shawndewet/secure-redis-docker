@@ -4,9 +4,9 @@ include .env
 
 init:
 	@echo "🔧 Initializing Nginx and Redis configs with domain: $(DOMAIN)"
-	@export DOMAIN=$(DOMAIN) && envsubst '$$DOMAIN' < nginx/nginx.conf > nginx/nginx.conf.generated
+	@DOMAIN=$(DOMAIN) && envsubst '$$DOMAIN' < nginx/nginx.conf > nginx/nginx.conf.generated
 	@mv nginx/nginx.conf.generated nginx/nginx.conf
-	@export DOMAIN=$(DOMAIN) REDIS_PASSWORD=$(REDIS_PASSWORD) && envsubst '$$DOMAIN $$REDIS_PASSWORD' < redis/redis.conf > redis/redis.conf.generated
+	@DOMAIN="$(DOMAIN)" REDIS_PASSWORD="$(REDIS_PASSWORD)" envsubst '$$DOMAIN $$REDIS_PASSWORD' < redis/redis.conf > redis/redis.conf.generated
 	@mv redis/redis.conf.generated redis/redis.conf
 
 deploy:
