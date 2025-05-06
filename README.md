@@ -8,11 +8,10 @@ Nginx acts as a reverse proxy, and all certificates are managed inside Docker co
 # 🏁 First Run Checklist
 
 ## 1. Upload / Extract Project
-- Upload or clone the `redis-secure-docker.zip` to your Linux VM.
+- Clone the repo to your Linux VM.
 - Extract:
   ```bash
-  unzip redis-secure-docker.zip
-  cd redis-secure-docker
+  git clone [repo url]
   ```
 
 ## 2. Edit `.env` file
