@@ -11,44 +11,44 @@ init:
 
 deploy:
 	@echo "🚀 Starting nginx and certbot containers..."
-	docker compose -f docker-compose.yml up -d nginx certbot
+	sudo docker compose -f docker-compose.yml up -d nginx certbot
 	@echo "🔒 Requesting Let's Encrypt certificate for $(DOMAIN)..."
-	docker run --rm -v certs:/etc/letsencrypt certbot/certbot certonly \
+	sudo docker run --rm -v certs:/etc/letsencrypt certbot/certbot certonly \
 		--webroot --webroot-path=/var/www/certbot \
 		-d $(DOMAIN) --email $(EMAIL) --agree-tos --no-eff-email
 	@echo "🧠 Starting Redis container..."
-	docker compose -f docker-compose.yml up -d redis
+	sudo docker compose -f docker-compose.yml up -d redis
 	@echo "✅ Deployment completed!"
 
 renew:
 	@echo "🔄 Forcing certificate renewal..."
-	docker run --rm -v certs:/etc/letsencrypt certbot/certbot renew --force-renewal --webroot --webroot-path=/var/www/certbot
+	sudo docker run --rm -v certs:/etc/letsencrypt certbot/certbot renew --force-renewal --webroot --webroot-path=/var/www/certbot
 	@echo "✅ Certificates renewed."
 
 clean:
 	@echo "🧹 Stopping and cleaning up containers and volumes..."
-	docker compose -f docker-compose.yml down
-	docker volume rm certs
+	sudo docker compose -f docker-compose.yml down
+	sudo docker volume rm certs
 	@echo "✅ Cleaned up."
 
 logs:
 	@echo "📜 Showing logs..."
-	docker compose -f docker-compose.yml logs -f
+	sudo docker compose -f docker-compose.yml logs -f
 
 restart:
 	@echo "♻️ Restarting all services..."
-	docker compose -f docker-compose.yml down
-	docker compose -f docker-compose.yml up -d
+	sudo docker compose -f docker-compose.yml down
+	sudo docker compose -f docker-compose.yml up -d
 
 health:
 	@echo "🔎 Checking Docker container statuses..."
-	docker ps --filter "name=nginx" --filter "name=redis" --filter "name=certbot"
+	sudo docker ps --filter "name=nginx" --filter "name=redis" --filter "name=certbot"
 
 	@echo "🔎 Checking if certificates exist..."
-	docker exec nginx ls /etc/letsencrypt/live/$(DOMAIN) || (echo "❌ Certificates not found!" && exit 1)
+	sudo docker exec nginx ls /etc/letsencrypt/live/$(DOMAIN) || (echo "❌ Certificates not found!" && exit 1)
 
 	@echo "🔎 Checking if Redis is reachable over TLS..."
-	docker run --rm --network redis-secure-docker_default redis:7-alpine redis-cli --tls --cacert /certs/live/$(DOMAIN)/fullchain.pem -h redis -p 6379 -a $(REDIS_PASSWORD) ping || (echo "❌ Redis PING failed!" && exit 1)
+	sudo docker run --rm --network redis-secure-docker_default redis:7-alpine redis-cli --tls --cacert /certs/live/$(DOMAIN)/fullchain.pem -h redis -p 6379 -a $(REDIS_PASSWORD) ping || (echo "❌ Redis PING failed!" && exit 1)
 
 	@echo "✅ All health checks passed!"
 
