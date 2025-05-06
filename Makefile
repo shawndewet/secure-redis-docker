@@ -4,12 +4,16 @@ include .env
 
 init:
 	@echo "🔧 Initializing Nginx and Redis configs with domain: $(DOMAIN)"
-	@DOMAIN=$(DOMAIN) && envsubst '$$DOMAIN' < nginx/nginx.conf > nginx/nginx.conf.generated
-	@mv nginx/nginx.conf.generated nginx/nginx.conf
+	@DOMAIN=$(DOMAIN) && envsubst '$$DOMAIN' < nginx/nginx.certonly.conf > nginx/nginx.certonly.conf.generated
+	@mv nginx/nginx.certonly.conf.generated nginx/nginx.certonly.conf
+	@DOMAIN=$(DOMAIN) && envsubst '$$DOMAIN' < nginx/nginx.full.conf > nginx/nginx.full.conf.generated
+	@mv nginx/nginx.full.conf.generated nginx/nginx.full.conf
 	@DOMAIN="$(DOMAIN)" REDIS_PASSWORD="$(REDIS_PASSWORD)" envsubst '$$DOMAIN $$REDIS_PASSWORD' < redis/redis.conf > redis/redis.conf.generated
 	@mv redis/redis.conf.generated redis/redis.conf
 
 deploy:
+	@echo "🚀 Copying certonly nginx config..."
+	cp nginx/nginx.certonly.conf nginx/nginx.conf
 	@echo "🚀 Starting nginx and certbot containers..."
 	sudo docker compose -f docker-compose.yml up -d nginx certbot
 	@echo "🔒 Requesting Let's Encrypt certificate for $(DOMAIN)..."
@@ -19,6 +23,10 @@ deploy:
 		certbot/certbot certonly \
 		--webroot --webroot-path=/var/www/certbot \
 		-d $(DOMAIN) --email $(EMAIL) --agree-tos --no-eff-email
+	@echo "♻️ Switching nginx config to full version..."
+	cp nginx/nginx.full.conf nginx/nginx.conf
+	@echo "🔄 Reloading nginx container..."
+	sudo docker compose -f docker-compose.prod.yml up -d nginx
 	@echo "🧠 Starting Redis container..."
 	sudo docker compose -f docker-compose.yml up -d redis
 	@echo "✅ Deployment completed!"
