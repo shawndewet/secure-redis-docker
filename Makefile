@@ -28,7 +28,9 @@ certify:
 		-v certbot-htdocs:/var/www/certbot \
 		certbot/certbot certonly \
 		--webroot --webroot-path=/var/www/certbot \
+		--deploy-hook "chown -R 999:999 /etc/letsencrypt" \
 		-d $(DOMAIN) --email $(EMAIL) --agree-tos --no-eff-email
+	@echo "🚀 Certs created...switching to full nginx.conf..."
 	cp nginx/nginx.full.conf nginx/nginx.conf
 	@echo "✅ Certified.  Now run make restart."
 
