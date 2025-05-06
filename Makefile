@@ -2,6 +2,18 @@ include .env
 
 .PHONY: init deploy renew clean logs restart
 
+fix-memory:
+	@echo "🛠 Setting vm.overcommit_memory=1 for Redis optimal performance..."
+	@sudo sysctl -w vm.overcommit_memory=1
+	@if ! grep -q '^vm.overcommit_memory=1' /etc/sysctl.conf; then \
+		echo "vm.overcommit_memory=1" | sudo tee -a /etc/sysctl.conf; \
+		echo "✅ Added vm.overcommit_memory=1 to /etc/sysctl.conf"; \
+	else \
+		echo "✅ vm.overcommit_memory=1 already set in /etc/sysctl.conf"; \
+	fi
+	@sudo sysctl -p
+	@echo "✅ Memory settings updated."
+
 init:
 	@echo "🔧 Initializing Nginx and Redis configs with domain: $(DOMAIN)"
 	@DOMAIN=$(DOMAIN) && envsubst '$$DOMAIN' < nginx/nginx.certonly.conf > nginx/nginx.certonly.conf.generated
