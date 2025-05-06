@@ -32,7 +32,7 @@ deploy:
 	@echo "♻️ Switching nginx config to full version..."
 	cp nginx/nginx.full.conf nginx/nginx.conf
 	@echo "🔄 Reloading nginx container..."
-	sudo docker compose -f docker-compose.prod.yml up -d nginx
+	sudo docker compose -f docker-compose.yml up -d nginx
 	@echo "🧠 Starting Redis container..."
 	sudo docker compose -f docker-compose.yml up -d redis
 	@echo "✅ Deployment completed!"
