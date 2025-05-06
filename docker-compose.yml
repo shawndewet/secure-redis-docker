@@ -37,6 +37,6 @@ services:
 
 volumes:
   certs:
+    external: true
   certbot-htdocs:
-
-
+    external: true

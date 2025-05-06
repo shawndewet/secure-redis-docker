@@ -44,8 +44,6 @@ clean:
 	sudo docker compose -f docker-compose.yml down
 	sudo docker volume rm certs
 	sudo docker volume rm certbot-htdocs
-	sudo docker volume rm codewell-redis_certs
-	sudo docker volume rm codewell-redis_certbot-htdocs
 	@echo "✅ Cleaned up."
 
 logs:
