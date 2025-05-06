@@ -17,7 +17,7 @@ create-volumes:
 	@if ! sudo docker volume inspect certbot-htdocs >/dev/null 2>&1; then sudo docker volume create certbot-htdocs; else echo "✅ Volume 'certbot-htdocs' already exists."; fi
 	@echo "✅ Volume creation completed."
 
-deploy:
+certify:
 	@echo "🚀 Copying certonly nginx config..."
 	cp nginx/nginx.certonly.conf nginx/nginx.conf
 	@echo "🚀 Starting nginx and certbot containers..."
@@ -29,13 +29,8 @@ deploy:
 		certbot/certbot certonly \
 		--webroot --webroot-path=/var/www/certbot \
 		-d $(DOMAIN) --email $(EMAIL) --agree-tos --no-eff-email
-	@echo "♻️ Switching nginx config to full version..."
 	cp nginx/nginx.full.conf nginx/nginx.conf
-	@echo "🔄 Reloading nginx container..."
-	sudo docker compose -f docker-compose.yml up -d nginx
-	@echo "🧠 Starting Redis container..."
-	sudo docker compose -f docker-compose.yml up -d redis
-	@echo "✅ Deployment completed!"
+	@echo "✅ Certified.  Now run make restart."
 
 renew:
 	@echo "🔄 Forcing certificate renewal..."
