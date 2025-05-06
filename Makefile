@@ -25,13 +25,17 @@ deploy:
 
 renew:
 	@echo "🔄 Forcing certificate renewal..."
-	sudo docker run --rm -v certs:/etc/letsencrypt certbot/certbot renew --force-renewal --webroot --webroot-path=/var/www/certbot
+	sudo docker run --rm \
+		-v certs:/etc/letsencrypt \
+		-v certbot-htdocs:/var/www/certbot \
+		certbot/certbot renew --force-renewal --webroot --webroot-path=/var/www/certbot
 	@echo "✅ Certificates renewed."
 
 clean:
 	@echo "🧹 Stopping and cleaning up containers and volumes..."
 	sudo docker compose -f docker-compose.yml down
 	sudo docker volume rm certs
+	sudo docker volume rm certbot-htdocs
 	@echo "✅ Cleaned up."
 
 logs:
