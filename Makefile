@@ -1,6 +1,7 @@
 include .env
 
-.PHONY: init deploy renew clean logs restart
+.PHONY: fix-memory init volumes certify renew clean logs restart
+.SILENT: health
 
 fix-memory:
 	@echo "🛠 Setting vm.overcommit_memory=1 for Redis optimal performance..."
@@ -78,7 +79,7 @@ health:
 	sudo docker exec nginx ls /etc/letsencrypt/live/$(DOMAIN) || (echo "❌ Certificates not found!" && exit 1)
 
 	@echo "🔎 Checking if Redis is reachable over TLS..."
-	sudo docker run --rm --network codewell-redis_default redis:7-alpine redis-cli --tls --cacert /certs/live/$(DOMAIN)/fullchain.pem -h redis -p 6379 -a $(REDIS_PASSWORD) ping || (echo "❌ Redis PING failed!" && exit 1)
+	sudo docker run --rm --network codewell-redis_default redis:7-alpine redis-cli --tls -h redis -p 6379 -a $(REDIS_PASSWORD) ping || (echo "❌ Redis PING failed!" && exit 1)
 
 	@echo "✅ All health checks passed!"
 
