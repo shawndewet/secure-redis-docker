@@ -1,23 +1,39 @@
 # Redis Secure Docker Setup
 
-This project runs Redis securely inside Docker with TLS certificates issued by Let's Encrypt.
-Nginx acts as a reverse proxy, and all certificates are managed inside Docker containers.
+This project sets up Redis securely inside Docker with TLS certificates issued by Let's Encrypt.
+Nginx acts as a reverse proxy for the Let's Encrypt process.
+It also configures RedisInsight for access via SSH tunnel.
 
+## Prerequisites:
+### The following prerequisites need to be installed onto your Linux Server.
+- make
+- docker
+
+### The DNS for your-real-domain.com needs to have an A record pointed at the public IP Address of your Linux Server
 ---
 
-# 🏁 First Run Checklist
-
-## 1. Upload / Extract Project
+## 1. Clone Project
 - Clone the repo to your Linux VM.
-- Extract:
   ```bash
   git clone [repo url]
+  cd [folder created by clone process]
   ```
 
-## 2. Edit `.env` file
+## 2. Change vm.overcommit_memory setting for Redis optimal performance
+```bash
+make fix-memory
+```
+
+## 3. Create Docker Volumes
+```bash
+make volumes
+```
+This creates docker volumes to be used by the containers.
+
+## 4. Create `.env` file
 Edit `.env`:
 ```bash
-nano .env
+cp .env.example .env && nano .env
 ```
 Set your real values:
 ```bash
@@ -26,36 +42,35 @@ EMAIL=your-email@example.com
 REDIS_PASSWORD=VeryStrongRandomPassword
 ```
 
-## 3. Open Ports
-Ensure ports 80 and 443 are allowed in the firewall.
-
-Example (UFW):
-```bash
-sudo ufw allow 80
-sudo ufw allow 443
-```
-
-## 4. Prepare Configuration Files
+## 5. Prepare Configuration Files
 ```bash
 make init
 ```
-This substitutes your domain and password into nginx and redis configs.
+This substitutes your domain and password from .env into nginx and redis configs.
 
-## 5. Deploy Nginx and Certbot
+## 6. Certify your SSL
 ```bash
-make deploy
+make certify
 ```
+This configures nginx for the certify step, and spins up the nginx and certbot containers,
+and executes the SSL certification process.
 
-## 6. Verify Certificates
+## 7. Restart
+```bash
+make restart
+```
+This restarts all the containers in the docker-compose.yml file
+
+## 8. Verify Certificates (optional self-satisfaction check) 
 Check certs inside nginx container:
 ```bash
 docker exec -it nginx ls /etc/letsencrypt/live/
 ```
 
-## 7. Test Redis Secure Connection
+## 9. Test Redis Secure Connection (optional self-satisfaction check) 
 Inside Docker:
 ```bash
-docker run -it --rm --network redis-secure-docker_default redis:7-alpine redis-cli --tls --cacert /certs/live/yourdomain.com/fullchain.pem -h redis -p 6379 -a YourStrongRandomPassword
+docker run -it --rm redis:7-alpine redis-cli --tls -h redis -p 6379 -a YourStrongRandomPassword
 ```
 
 Outside Docker:
@@ -69,10 +84,19 @@ Should respond:
 PONG
 ```
 
-## 8. Watch Logs (Optional)
+## 10. Watch Logs (Optional)
 ```bash
 make logs
 ```
+
+## Connect to RedisInsight
+From your workstation, establish an SSH tunnel for port 5540:
+```bash
+ssh -L 5540:localhost:5540 username@linuxvmip
+```
+Then browse to http://localhost:5540
+
+Create a redis server connection using the your-real-domain.com as the hostname (and remember to indicate Use TLS on the Security tab)
 
 ---
 
@@ -81,20 +105,11 @@ make logs
 | Command | Purpose |
 |:---|:---|
 | `make init` | Prepare nginx and redis configs from `.env` |
-| `make deploy` | Deploy nginx, request cert, then start redis |
+| `make certify` | Deploy nginx for certification, request cert, reconfigure nginx for prod (follow this with `make restart`) |
 | `make logs` | View logs from all containers |
 | `make restart` | Restart all services |
 | `make renew` | Force certificate renewal |
 | `make clean` | Tear down all containers and volumes |
-
----
-
-# ✅ First Run Success Criteria
-
-- [ ] HTTPS access gives 502 Bad Gateway (expected initially)
-- [ ] Nginx, Redis, Certbot are healthy (`make logs`)
-- [ ] Secure `redis-cli` connection via TLS and password
-- [ ] No unencrypted ports exposed
 
 ---
 

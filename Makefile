@@ -23,7 +23,7 @@ init:
 	@DOMAIN="$(DOMAIN)" REDIS_PASSWORD="$(REDIS_PASSWORD)" envsubst '$$DOMAIN $$REDIS_PASSWORD' < redis/redis.conf > redis/redis.conf.generated
 	@mv redis/redis.conf.generated redis/redis.conf
 
-create-volumes:
+volumes:
 	@echo "🛠 Creating global Docker volumes 'certs' and 'certbot-htdocs' if missing..."
 	@if ! sudo docker volume inspect certs >/dev/null 2>&1; then sudo docker volume create certs; else echo "✅ Volume 'certs' already exists."; fi
 	@if ! sudo docker volume inspect certbot-htdocs >/dev/null 2>&1; then sudo docker volume create certbot-htdocs; else echo "✅ Volume 'certbot-htdocs' already exists."; fi
@@ -78,7 +78,7 @@ health:
 	sudo docker exec nginx ls /etc/letsencrypt/live/$(DOMAIN) || (echo "❌ Certificates not found!" && exit 1)
 
 	@echo "🔎 Checking if Redis is reachable over TLS..."
-	sudo docker run --rm --network redis-secure-docker_default redis:7-alpine redis-cli --tls --cacert /certs/live/$(DOMAIN)/fullchain.pem -h redis -p 6379 -a $(REDIS_PASSWORD) ping || (echo "❌ Redis PING failed!" && exit 1)
+	sudo docker run --rm --network codewell-redis_default redis:7-alpine redis-cli --tls --cacert /certs/live/$(DOMAIN)/fullchain.pem -h redis -p 6379 -a $(REDIS_PASSWORD) ping || (echo "❌ Redis PING failed!" && exit 1)
 
 	@echo "✅ All health checks passed!"
 
