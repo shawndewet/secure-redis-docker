@@ -26,6 +26,15 @@ services:
       - certs:/certs
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
 
+  redisinsight:
+    image: redis/redisinsight
+    container_name: redisinsight
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - redisinsight-storage:/db
+
   certbot:
     image: certbot/certbot
     container_name: certbot
@@ -40,3 +49,5 @@ volumes:
     external: true
   certbot-htdocs:
     external: true
+  redisinsight-storage:
+    external: false
